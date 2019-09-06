@@ -1,0 +1,140 @@
+
+import java_cup.runtime.*;
+
+/* Parser code to change the way the parser reports 1s (include
+   line and column number of the error). */
+parser code {:
+    public boolean syntaxErrors;
+
+    public void syntax_error(Symbol current_token) {
+        report_error(
+            "Syntax error at line " + (current_token.left+1) + ", column "
+            + current_token.right, null
+        );
+    }
+:};
+
+
+terminal        END;                                                                                                            // End Statement
+terminal        EQ, CONCAT, POINTS, EQEQ, NOT_EQ, AND, OR, NOT, PLUS, MINUS, TIMES, DIVIDE, CARET;                               // Operators and Syntax
+terminal        PARENTHESESLEFT, PARENTHESESRIGHT, BRACESLEFT, BRACESRIGHT,BRACKETSLEFT, BRACKETSRIGHT, LESS_THAN_EQUAL;        // Operators and Syntax
+terminal        LESS_THAN, BIGGER_THAN, COMMA, DOT;                                                                             // Operators and Syntax
+terminal        L, H;                                                                                                           // Security Labels
+terminal        INTEGER, CHARACTER, RATIONAL, FLOAT, BOOLEAN, SEQ, TOP;                                                         // Types
+terminal        MAIN, TYPE_DEF, FUNCTION_DEF, IN, ALIAS, IF, FI, THEN, ELSE, READ, PRINT, RETURN, BREAK, LOOP, POOL;            // Keywords
+terminal        IDENTIFIER, NUMBER, STRING;                                                                                     // Literals
+
+non terminal    mostAbstract, mainFunction, codeBlock, codeBlockBreak;                                                               // Most Abstract
+non terminal    identifier, fieldReference;                                                                                     // Identifier Related 
+non terminal    type, auxType, seqType, securityType;                                                                           // Type Related
+non terminal    declarationBlock, declaration, typeDeclaration, assignment, typeDefinition, alias;                              // Declaration Related
+non terminal    seqValue, seqReference;                                                                                         // Sequance Related
+non terminal    expressionList, expression, expressionOrNull, operator, comparator;                                             // Expression Related
+non terminal    statementBlock, statementBlockBreak, statement, statementBreak, print, read, loop, break, if, return, ifBreak;  // Statement Related
+non terminal    function, functionCall, parameters, returnType, arguments;                                                      // Function Related
+  
+
+precedence left OR, PLUS, MINUS;
+precedence left AND, TIMES, DIVIDE;
+precedence left CONCAT;
+precedence right IN, CARET;
+precedence nonassoc NOT, LESS_THAN, LESS_THAN_EQUAL, BIGGER_THAN, EQEQ, NOT_EQ;
+
+
+mostAbstract ::= declarationBlock mainFunction declarationBlock;
+mainFunction ::= MAIN BRACESLEFT codeBlock BRACESRIGHT END;
+codeBlock ::= declarationBlock statementBlock;
+
+
+function ::= FUNCTION_DEF IDENTIFIER PARENTHESESLEFT parameters PARENTHESESRIGHT BRACESLEFT codeBlock BRACESRIGHT returnType END;
+parameters ::= typeDeclaration | typeDeclaration COMMA parameters |;
+returnType ::= POINTS type |;
+functionCall ::= IDENTIFIER PARENTHESESLEFT arguments PARENTHESESRIGHT;
+arguments ::= expression | expression COMMA arguments |;
+
+
+type ::= seqType | securityType;
+securityType ::= CHARACTER L | CHARACTER H | INTEGER L | INTEGER H | RATIONAL  L | RATIONAL H | FLOAT L | FLOAT H | BOOLEAN L | BOOLEAN H | IDENTIFIER ;
+seqType ::= SEQ LESS_THAN auxType BIGGER_THAN;
+auxType ::= type | TOP L | TOP H;
+typeDeclaration ::= IDENTIFIER POINTS type;
+typeDefinition ::= TYPE_DEF IDENTIFIER BRACESLEFT parameters BRACESRIGHT END;
+alias ::= ALIAS type type END;
+
+
+identifier ::= fieldReference DOT identifier | fieldReference ;
+fieldReference ::= IDENTIFIER
+             | IDENTIFIER BRACKETSLEFT expression BRACKETSRIGHT
+             | IDENTIFIER BRACKETSLEFT expressionOrNull POINTS expressionOrNull BRACKETSRIGHT
+             | functionCall
+             | functionCall BRACKETSLEFT expression BRACKETSRIGHT
+             | functionCall BRACKETSLEFT expressionOrNull POINTS expressionOrNull BRACKETSRIGHT
+             ;
+
+
+expressionList ::= expression | expression COMMA expressionList;
+seqValue ::= BRACKETSLEFT seqReference BRACKETSRIGHT
+           | BRACKETSLEFT BRACKETSRIGHT
+           | STRING
+           ;
+seqReference ::= expression | expression COMMA seqReference;
+
+expression ::= MINUS expression
+             | NOT expression
+             | expression operator expression
+             | expression comparator expression
+             | PARENTHESESLEFT expression PARENTHESESRIGHT
+             | seqValue
+             | BOOLEAN
+             | NUMBER
+             | CHARACTER
+             | identifier
+             ;
+expressionOrNull ::= expression |;
+operator ::= PLUS | MINUS | TIMES | DIVIDE | CARET | CONCAT | IN;
+comparator ::= AND | OR | EQEQ | LESS_THAN | BIGGER_THAN | LESS_THAN_EQUAL  | NOT_EQ;
+
+declarationBlock ::= declarationBlock declaration |;
+declaration ::= typeDefinition
+              | typeDeclaration END
+			  | typeDeclaration EQ expressionList END
+              | alias
+              | function
+              ;
+
+
+statementBlock ::= statement statementBlock | statement;
+statement ::= if
+            | loop
+            | read
+            | print
+            | assignment
+            | functionCall END
+            | return
+            ;
+
+codeBlockBreak ::= declarationBlock statementBlockBreak;
+statementBlockBreak ::= statementBreak statementBlockBreak | statementBreak;
+statementBreak ::= loop
+            | break
+            | ifBreak
+            | read
+            | print
+            | assignment
+            | return
+            | functionCall END
+            ;
+ifBreak ::= IF PARENTHESESLEFT expression PARENTHESESRIGHT THEN codeBlockBreak FI
+          | IF PARENTHESESLEFT expression PARENTHESESRIGHT THEN codeBlockBreak ELSE codeBlockBreak FI
+          ;     
+
+
+if ::= IF PARENTHESESLEFT expression PARENTHESESRIGHT THEN codeBlock FI
+     | IF PARENTHESESLEFT expression PARENTHESESRIGHT THEN codeBlock ELSE codeBlock FI
+     ;
+assignment ::= identifier EQ expressionList END;
+print ::= PRINT expression END;
+read ::= READ identifier END;
+loop ::= LOOP codeBlockBreak POOL;
+break ::= BREAK END | BREAK NUMBER END;
+return ::= RETURN END | RETURN expression END;
