@@ -16,7 +16,7 @@ parser code {:
 
 
 terminal        END;                                                                                                            // End Statement
-terminal        EQ, CONCAT, POINTS, EQEQ, NOT_EQ, AND, OR, NOT, PLUS, MINUS, TIMES, DIVIDE, CARET;                               // Operators and Syntax
+terminal        EQ, CONCAT, POINTS, EQEQ, NOT_EQ, AND, OR, NOT, PLUS, MINUS, TIMES, DIVIDE, CARET;                              // Operators and Syntax
 terminal        PARENTHESESLEFT, PARENTHESESRIGHT, BRACESLEFT, BRACESRIGHT,BRACKETSLEFT, BRACKETSRIGHT, LESS_THAN_EQUAL;        // Operators and Syntax
 terminal        LESS_THAN, BIGGER_THAN, COMMA, DOT;                                                                             // Operators and Syntax
 terminal        L, H;                                                                                                           // Security Labels
@@ -24,7 +24,7 @@ terminal        INTEGER, CHARACTER, RATIONAL, FLOAT, BOOLEAN, SEQ, TOP;         
 terminal        MAIN, TYPE_DEF, FUNCTION_DEF, IN, ALIAS, IF, FI, THEN, ELSE, READ, PRINT, RETURN, BREAK, LOOP, POOL;            // Keywords
 terminal        IDENTIFIER, NUMBER, STRING;                                                                                     // Literals
 
-non terminal    mostAbstract, mainFunction, codeBlock, codeBlockBreak;                                                               // Most Abstract
+non terminal    mostAbstract, mainFunction, codeBlock, codeBlockBreak;                                                          // Most Abstract
 non terminal    identifier, fieldReference;                                                                                     // Identifier Related 
 non terminal    type, auxType, seqType, securityType;                                                                           // Type Related
 non terminal    declarationBlock, declaration, typeDeclaration, assignment, typeDefinition, alias;                              // Declaration Related
